@@ -167,3 +167,65 @@ print(f"  {RED}'Weapons of Math Destruction' by Cathy O'Neil.{RESET}")
 print(f"  {RED}Code is not neutral. Data is not neutral.{RESET}")
 print(f"  {RED}Whoever designs the model holds the power.{RESET}")
 print(f"{BLUE}{'=' * 58}{RESET}")
+# ============================================================
+# API FUNCTION - returns analysis as a dictionary for Flask
+# Added for Progress Document #5: connecting backend to API
+# ============================================================
+def get_analysis():
+    # Per-student averages and rankings
+    averages = np.mean(student_grades, axis=1)
+    ranked_indices = np.argsort(averages)[::-1]
+
+    ranking = []
+    for rank, idx in enumerate(ranked_indices):
+        avg = float(averages[idx])
+        if avg >= 85:
+            status = "High Performer"
+        elif avg >= 70:
+            status = "Passing"
+        elif avg >= 60:
+            status = "Below Average"
+        else:
+            status = "Failing"
+        ranking.append({
+            "rank": rank + 1,
+            "student": f"Student {int(idx) + 1}",
+            "average": round(avg, 1),
+            "gpa": convert_to_gpa(avg),
+            "status": status
+        })
+
+    # Subject averages
+    subj_avgs = np.mean(student_grades, axis=0)
+    subject_data = [
+        {"subject": subj, "average": round(float(a), 1)}
+        for subj, a in zip(subjects, subj_avgs)
+    ]
+    strongest = subjects[int(np.argmax(subj_avgs))]
+    weakest = subjects[int(np.argmin(subj_avgs))]
+
+    # Eigenvalue analysis
+    covariance_matrix = np.cov(student_grades.T)
+    eigenvalues, _ = np.linalg.eig(covariance_matrix)
+    eigen_data = [round(float(v), 2) for v in eigenvalues]
+    dominant = int(np.argmax(eigenvalues)) + 1
+
+    # Bias awareness note
+    bias_note = (
+        "This tool finds patterns in whatever data it receives. "
+        "If the input reflects historical bias, the algorithm treats "
+        "that bias as truth and amplifies it -- as described in "
+        "'Weapons of Math Destruction' by Cathy O'Neil. "
+        "Code is not neutral. Data is not neutral. "
+        "Whoever designs the model holds the power."
+    )
+
+    return {
+        "ranking": ranking,
+        "subjects": subject_data,
+        "strongest_subject": strongest,
+        "weakest_subject": weakest,
+        "eigenvalues": eigen_data,
+        "dominant_pattern": dominant,
+        "bias_note": bias_note
+    }
