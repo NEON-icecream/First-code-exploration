@@ -5,11 +5,18 @@ function App() {
   const [analysis, setAnalysis] = useState(null);
 
   useEffect(() => {
-    fetch('http://127.0.0.1:5000/api/analysis')
+    fetch('http://127.0.0.1:5000/api/analysis-public')
       .then(response => response.json())
       .then(data => setAnalysis(data))
       .catch(error => console.error('Error fetching data:', error));
   }, []);
+
+  // Returns a color based on the student's status
+  const getStatusColor = (status) => {
+    if (status === "High Performer" || status === "Passing") return "#4ade80"; // green
+    if (status === "Below Average") return "#facc15"; // yellow
+    return "#f87171"; // red for Failing
+  };
 
   if (!analysis) {
     return (
@@ -46,9 +53,9 @@ function App() {
               <tr key={i}>
                 <td>{s.rank}</td>
                 <td>{s.student}</td>
-                <td>{s.average}</td>
-                <td>{s.gpa}</td>
-                <td>{s.status}</td>
+                <td style={{ color: getStatusColor(s.status) }}>{s.average}</td>
+                <td style={{ color: getStatusColor(s.status) }}>{s.gpa}</td>
+                <td style={{ color: getStatusColor(s.status), fontWeight: 'bold' }}>{s.status}</td>
               </tr>
             ))}
           </tbody>
